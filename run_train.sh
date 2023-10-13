@@ -13,29 +13,25 @@
 ##  
 ######################################################################
 
-export env_name="??"
+export env_name="Bert-keras"
 export python=/home/nxu/anaconda3/envs/${env_name}/bin/python3
-export root_dir="${HOME}/nxu/LEVENs/CAIL_2023/"
+export root_dir="${HOME}/LEVENs/CAIL_2023/"
 
 ##-----------------------------------------------------------------------------------------
 export device="7"
 export epochs=5
-export batch_size=1
+export batch_size=4
 export lr=3e-5
 export max_seq_length=128
-export pretrained_model_path="${root_dir}/?" # todo 
+export pretrained_model_path="${root_dir}/ziliang_test/query_sementics/Lawformer" # todo 
 export save_log_path="${root_dir}/log/boring-log.log"
 export save_model_path="${pretrained_model_path}/saved_models/${epochs}${lr}${max_sql_length}"
 export max_step=20000
 
 # dataset related
 export lblpth="/home/nxu/LEVENs/CAIL_2023/label4train/stage1_train_label.json"
-export q_pth="/home/nxu/LEVENs/CAIL_2023/processed_data/train_query.json"
-export can_dir="/home/nxu/LEVENs/CAIL_2023/processed_data"
-
-export lblpth="/mnt/d/backup-deletethis/label4train/stage1_train_label.json"
-export q_pth="/mnt/d/backup-deletethis/train_query.json"
-export can_dir="/mnt/d/backup-deletethis/stage_1/stage_1/candidate/"
+export q_pth="/home/nxu/LEVENs/CAIL_2023/processed_data/stage_1/train_query.json"
+export can_dir="/home/nxu/LEVENs/CAIL_2023/processed_data/stage_1/candidate/"
 
 echo "--->>>BEGIN TO TRAIN"
 ${python} train.py \
@@ -44,16 +40,15 @@ ${python} train.py \
 	--device=${device} \
 	--cuda_num=${device} \
 	--epochs=${epochs} \
-	--batch_size=${max_seq_length} \
+	--batch_size=${batch_size} \
 	--lr=${lr} \
 	--pretrained_model_path=${pretrained_model_path} \
 	--save_model_path="${save_model_path}" \
 	--max_step=${max_step} \
+	--lambdaa=20\
 	--lblpth=${lblpth}\
-	--q_pth=${q_pth}\
+	--qpth=${q_pth}\
 	--can_dir=${can_dir}
-done
-
 
 echo "RUNNING run_train.sh DONE."
 # run_train.sh ends here

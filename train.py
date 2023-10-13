@@ -63,8 +63,8 @@ def setup_train_args():
                         type=int, required=False, help="模型的最大输入长度")
     parser.add_argument("--max_step", default=500,
                         type=int, required=False, help="max step for training.")
-    parser.add_argument("--lambdaa", default=0.8,
-                        type=int, required=False, help="lambdaa for cosent loss")
+    parser.add_argument("--lambdaa", default=20,
+                        type=float, required=False, help="lambdaa for cosent loss")
     parser.add_argument("--lblpth", 
                         type=str, required=True)
     parser.add_argument("--qpth", 
@@ -156,12 +156,23 @@ def _create_logger(args):
 
 
 
-def train(model, optimizer, train_loader,args):
+def train(tokenizer, model, device, optimizer, train_loader,args):
     model.train()
     step=0.
+    alllos=0.
     for epoch in range(args.epochs):
         print(f"-------EPOCH {epoch}-------------")
         for i,(q,c3,c2,c15,c1,c05,c0) in enumerate(train_loader):
+
+            q=q.to(device)
+            c3=c3.to(device)
+            c2=c2.to(device)
+            c15=c15.to(device)
+            c1=c1.to(device)
+            c05=c05.to(device)
+            c0=c0.to(device)
+
+            # print(q.shape)
 
             ####
             ## link cosine loss
@@ -193,26 +204,26 @@ def train(model, optimizer, train_loader,args):
             co0=cof(eq,ec0);
 
             ## 2. calculate the 差值 in these orders 
-            lambdaa=self.lambdaa
+            lambdaa=args.lambdaa
             res=0.
-            res+=torch.exp(lambdaa*(co3-co2))
-            res+=torch.exp(lambdaa*(co2-co15))
-            res+=torch.exp(lambdaa*(co15-co1))
-            res+=torch.exp(lambdaa*(co1-co05))
-            res+=torch.exp(lambdaa*(co05-co0))
+            res+=torch.exp(-1*lambdaa*(co3-co2))
+            res+=torch.exp(-1*lambdaa*(co2-co15))
+            res+=torch.exp(-1*lambdaa*(co15-co1))
+            res+=torch.exp(-1*lambdaa*(co1-co05))
+            res+=torch.exp(-1*lambdaa*(co05-co0))
 
             # now the shape of res should be (bs,1)
             res=torch.sum(res)
 
             los=torch.log(res+1)
             
-            if step%100==0:
+            if step%1==0:
                 print(f"now the loss is: {los}")
 
             los.backward()
             if step%args.gradient_accumulation==0:
                 alllos+=los.item()
-                optimizer.backward()
+                optimizer.step()
                 optimizer.zero_grad()
             step+=1
             if step>=args.max_step:
@@ -257,16 +268,12 @@ def main(args):
                               shuffle=True,
                               drop_last=True)
 
-    train(model=model, optimizer=optimizer,
-          train_loader=train_loader,args)
+    train(tokenizer=tokenizer,model=model,
+          device=device,
+          optimizer=optimizer,
+          train_loader=train_loader,args=args)
 
     
-if __name__ == '__main__':
-    main()
-
-
-
-
 
 ## running entry
 if __name__=="__main__":

@@ -31,6 +31,7 @@ import json
 import random
 from pathlib import Path
 import re
+from collections import OrderedDict
 
 class ExtractDataset(Dataset):
 
@@ -85,7 +86,7 @@ class ExtractDataset(Dataset):
                 self.train_ls.append((query_idx,idx_s3,idx_s2,idx_s15,
                                   idx_s1,idx_s05,idx_s0))
             else:
-                print(">>>> invalid sample with query idx:{query_idx}")
+                print(f">>>> invalid sample with query idx:{query_idx}")
         print(f"all_dataset_len:{len(self.train_ls)}")
         del data
 
@@ -99,9 +100,15 @@ class ExtractDataset(Dataset):
 
         ##1. first parse the query dataset.
         # from collections import OrderedDict
+        data=[]
         self.query_pth=q_pth
         with open(self.query_pth, 'r',encoding='utf8') as f:
-            data=json.load(f,object_pairs_hook=OrderedDict)
+            # its everyline is a dict.
+            lines=f.readlines()
+            for l  in lines:
+                if "\n" in l:
+                    l=l.split("\n")[0]
+                data.append(json.loads(l,object_pairs_hook=OrderedDict))
 
         self.text_dict={}
         self.qls=[]
@@ -111,14 +118,17 @@ class ExtractDataset(Dataset):
         self.c1s=[]
         self.c05s=[]
         self.c0s=[]
+        # print(self.train_dict)
         for i,sample in enumerate(data):
-            if i>10:
-                break;
-            if sample["id"] in self.train_dict:
+            # if i>2000:
+                # break
+
+            # print(type(sample["id"]),sample["id"])
+            if str(sample["id"]) in self.train_dict:
                 query=sample["query"]
                 # then obtain all candidates text.
                 can_txts=[]
-                cans=self.train_dict[sample["id"]]
+                cans=self.train_dict[str(sample["id"])]
                 prefix_can_pth=can_dir
                 for c in cans:
                     # from collections import OrderedDict
@@ -141,6 +151,7 @@ class ExtractDataset(Dataset):
         self.tokenizer=tokenizer
         mx=args.max_seq_length
 
+        # print(self.qls)
         qls_ten=self.tokenizer(self.qls,padding="longest",
                                max_length=mx,
                                truncation=True,
@@ -177,10 +188,12 @@ class ExtractDataset(Dataset):
                                return_tensors="pt").input_ids
 
         self.datals=[]
+        # print(qls_ten.shape)
         for i in range(len(qls_ten)):
             self.datals.append((qls_ten[i],c3_ten[i],c2_ten[i],
                                 c15_ten[i],
                                 c1_ten[i],c05_ten[i],c0_ten[i]))
+        print(len(self.datals))
 
     def __getitem__(self,i):
         return self.datals[i]
