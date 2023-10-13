@@ -34,9 +34,12 @@ import re
 
 class ExtractDataset(Dataset):
 
-    def __init__(self,args,tokenizer,tp="vanilla",mode="train"):
-        self.lblpth="/home/nxu/LEVENs/CAIL_2023/label4train/stage1_train_label.json"
-        self.datapath="/home/nxu/LEVENs/CAIL_2023/"
+    def __init__(self,args,tokenizer,tp="vanilla",mode="train",
+                 lblpth="/home/nxu/LEVENs/CAIL_2023/label4train/stage1_train_label.json",
+                 q_pth="/mnt/d/backup-deletethis/train_query.json",
+                 can_dir="/home/nxu/LEVENs/CAIL_2023/processed_data",
+                 ):
+        self.lblpth=lblpth
 
         # from collections import OrderedDict
         with open(self.lblpth, 'r',encoding='utf8') as f:
@@ -96,7 +99,7 @@ class ExtractDataset(Dataset):
 
         ##1. first parse the query dataset.
         # from collections import OrderedDict
-        self.query_pth="/mnt/d/backup-deletethis/train_query.json"
+        self.query_pth=q_pth
         with open(self.query_pth, 'r',encoding='utf8') as f:
             data=json.load(f,object_pairs_hook=OrderedDict)
 
@@ -114,7 +117,7 @@ class ExtractDataset(Dataset):
                 # then obtain all candidates text.
                 can_txts=[]
                 cans=self.train_dict[sample["id"]]
-                prefix_can_pth="XXXXXXXXXXX"
+                prefix_can_pth=can_dir
                 for c in cans:
                     # from collections import OrderedDict
                     with open(prefix_can_pth+f"{c}.json",

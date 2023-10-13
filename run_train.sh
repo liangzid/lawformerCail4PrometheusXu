@@ -14,7 +14,7 @@
 ######################################################################
 
 export env_name="??"
-export python=/home/nxu/anaconda3/envs/env_name/bin/python3
+export python=/home/nxu/anaconda3/envs/${env_name}/bin/python3
 export root_dir="${HOME}/nxu/LEVENs/CAIL_2023/"
 
 ##-----------------------------------------------------------------------------------------
@@ -27,6 +27,12 @@ export pretrained_model_path="${root_dir}/?" # todo
 export save_log_path="${root_dir}/log/boring-log.log"
 export save_model_path="${pretrained_model_path}/saved_models/${epochs}${lr}${max_sql_length}"
 export max_step=20000
+
+# dataset related
+export lblpth="/home/nxu/LEVENs/CAIL_2023/label4train/stage1_train_label.json"
+export q_pth="/home/nxu/LEVENs/CAIL_2023/processed_data/train_query.json"
+export can_dir="/home/nxu/LEVENs/CAIL_2023/processed_data"
+
 echo "--->>>BEGIN TO TRAIN"
 ${python} train.py \
 	--train=1 \
@@ -38,13 +44,11 @@ ${python} train.py \
 	--lr=${lr} \
 	--pretrained_model_path=${pretrained_model_path} \
 	--save_model_path="${save_model_path}" \
-	--max_step=${max_step}
+	--max_step=${max_step} \
+	--lblpth=${lblpth}\
+	--q_pth=${q_pth}\
+	--can_dir=${can_dir}
 done
-
-
-
-
-
 
 
 echo "RUNNING run_train.sh DONE."

@@ -65,6 +65,12 @@ def setup_train_args():
                         type=int, required=False, help="max step for training.")
     parser.add_argument("--lambdaa", default=0.8,
                         type=int, required=False, help="lambdaa for cosent loss")
+    parser.add_argument("--lblpth", 
+                        type=str, required=True)
+    parser.add_argument("--qpth", 
+                        type=str, required=True)
+    parser.add_argument("--can_dir", 
+                        type=str, required=True)
 
     parser.add_argument("--train", default=1, type=int,
                         required=True, help="用以决定是训练模式还是测试模式")
@@ -238,7 +244,13 @@ def main(args):
     if args.seed:
         _set_random_seed(args.seed)
 
-    train_set=ExtractDataset(args,tokenizer,)
+    train_set=ExtractDataset(args,tokenizer,
+                             tp="vanilla",
+                             mode="train",
+                             lblpth=args.lblpth,
+                             q_pth=args.qpth,
+                             can_dir=args.can_dir,
+                             )
 
     train_loader = DataLoader(train_set,
                               batch_size=args.batch_size,
