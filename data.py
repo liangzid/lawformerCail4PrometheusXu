@@ -111,7 +111,9 @@ class ExtractDataset(Dataset):
         self.c1s=[]
         self.c05s=[]
         self.c0s=[]
-        for sample in data:
+        for i,sample in enumerate(data):
+            if i>10:
+                break;
             if sample["id"] in self.train_dict:
                 query=sample["query"]
                 # then obtain all candidates text.
@@ -186,4 +188,5 @@ class ExtractDataset(Dataset):
     def __len__(self):
         return len(self.datals)
                 
+
 

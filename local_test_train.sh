@@ -1,12 +1,12 @@
 #!/bin/bash
 ######################################################################
-#RUN_TRAIN ---
+#LOCAL_TEST_TRAIN ---
 
-# run train file to begin a training exam.
+# to debug the code of model training
 
 # Author: Zi Liang <liangzid@stu.xjtu.edu.cn>
 # Copyright © 2023, ZiLiang, all rights reserved.
-# Created: 12 October 2023
+# Created: 13 October 2023
 ######################################################################
 
 ######################### Commentary ##################################
@@ -29,9 +29,6 @@ export save_model_path="${pretrained_model_path}/saved_models/${epochs}${lr}${ma
 export max_step=20000
 
 # dataset related
-export lblpth="/home/nxu/LEVENs/CAIL_2023/label4train/stage1_train_label.json"
-export q_pth="/home/nxu/LEVENs/CAIL_2023/processed_data/train_query.json"
-export can_dir="/home/nxu/LEVENs/CAIL_2023/processed_data"
 
 export lblpth="/mnt/d/backup-deletethis/label4train/stage1_train_label.json"
 export q_pth="/mnt/d/backup-deletethis/train_query.json"
@@ -57,3 +54,15 @@ done
 
 echo "RUNNING run_train.sh DONE."
 # run_train.sh ends here
+
+
+
+
+
+
+
+
+
+
+echo "RUNNING local_test_train.sh DONE."
+# local_test_train.sh ends here
