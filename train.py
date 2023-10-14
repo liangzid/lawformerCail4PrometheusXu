@@ -179,13 +179,13 @@ def train(tokenizer, model, device, optimizer, train_loader,args):
             ## cos(q,c3)>cos(q,c2), cos(q,c2)>cos(q,c15), cos(q,c15>q,c1)
             ## cos(q,c1)>cos(q,c05) cos(q, c05)>cos(q,c0)
             ###
-            eq=model(q).pooler_output; # bs, d
-            ec3=model(c3).pooler_output;
-            ec2=model(c2).pooler_output;
-            ec15=model(c15).pooler_output;
-            ec1=model(c1).pooler_output;
-            ec05=model(c05).pooler_output;
-            ec0=model(c0).pooler_output;
+            eq=model(q).pooler_output # bs, d
+            ec3=model(c3).pooler_output
+            ec2=model(c2).pooler_output
+            ec15=model(c15).pooler_output
+            ec1=model(c1).pooler_output
+            ec05=model(c05).pooler_output
+            ec0=model(c0).pooler_output
             
             
             ######
@@ -195,25 +195,32 @@ def train(tokenizer, model, device, optimizer, train_loader,args):
             ## now calculate the variant cosent loss
 
             # 1. calculate cosine similarity
-            cof=torch.nn.CosineSimilarity(dim=1,eps=1e-6);
-            co3=cof(eq,ec3);
-            co2=cof(eq,ec2);
-            co15=cof(eq,ec15);
-            co1=cof(eq,ec1);
-            co05=cof(eq,ec05);
-            co0=cof(eq,ec0);
+            cof=torch.nn.CosineSimilarity(dim=1,eps=1e-6)
+            co3=cof(eq,ec3)
+            co2=cof(eq,ec2)
+            co15=cof(eq,ec15)
+            co1=cof(eq,ec1)
+            co05=cof(eq,ec05)
+            co0=cof(eq,ec0)
 
             ## 2. calculate the 差值 in these orders 
             lambdaa=args.lambdaa
             res=0.
+            ## 2.1 full
             res+=torch.exp(-1*lambdaa*(co3-co2))
             res+=torch.exp(-1*lambdaa*(co2-co15))
             res+=torch.exp(-1*lambdaa*(co15-co1))
             res+=torch.exp(-1*lambdaa*(co1-co05))
             res+=torch.exp(-1*lambdaa*(co05-co0))
 
+            # ## 2.2
+            # res+=torch.exp(-1*lambdaa*(co3-co2))
+            # res+=torch.exp(-1*lambdaa*(co2-co1))
+            # res+=torch.exp(-1*lambdaa*(co1-co0))
+
+            res=torch.sum(res)/args.batch_size
+
             # now the shape of res should be (bs,1)
-            res=torch.sum(res)
 
             los=torch.log(res+1)
             
@@ -227,7 +234,7 @@ def train(tokenizer, model, device, optimizer, train_loader,args):
                 optimizer.zero_grad()
             step+=1
             if step>=args.max_step:
-                break;
+                break
 
         model.save_pretrained(args.save_model_path +f"e{epoch}")
         tokenizer.save_pretrained(args.save_model_path+f"e{epoch}")
@@ -273,13 +280,35 @@ def main(args):
           optimizer=optimizer,
           train_loader=train_loader,args=args)
 
-    
+def main_test(args):
+
+    global LOGGER
+    LOGGER = _create_logger(args)
+    # 设置有关设备的问题
+    args.cuda = torch.cuda.is_available() and not args.no_cuda
+    device = 'cuda:{}'.format(args.cuda_num) if args.cuda else 'cpu'
+    LOGGER.info('using device:  {}'.format(device))
+    # os.environ["CUDA_VISIBLE_DEVICES"] = "0,1,2,3"
+
+
+    print(f"path: {args.save_model_path}")
+    model = AutoModel.from_pretrained(args.save_model_path)
+    tokenizer = AutoTokenizer.from_pretrained(args.save_model_path)
+    model = model.to(device)
+
+    if args.seed:
+        _set_random_seed(args.seed)
+
+    from valid import valid
+    valid(tokenizer=tokenizer,
+          model=model,
+          device=device,
+          test_query_pth="/home/nxu/LEVENs/CAIL_2023/processed_data/stage_1/test_query.json",
+          args=args)
 
 ## running entry
 if __name__=="__main__":
     args = setup_train_args()
-    # print(type(args.train))
-    # print(args.train)
 
     if args.train == 1:
         main(args)
