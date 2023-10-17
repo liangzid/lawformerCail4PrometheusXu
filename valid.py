@@ -76,13 +76,15 @@ def valid(tokenizer,model,device,test_query_pth,args):
             print(f"len of top1k ls: {len(top_1000_ls)}")
 
             # query:
-            qtxt=adict["query"]
+            # qtxt=adict["query"]
+            qtxt=adict["fact"]
             can_txt_ls=[]
             can_pth_prefix="/home/nxu/LEVENs/CAIL_2023/processed_data/stage_1/candidate/"
             for cidx in top_1000_ls:
                 with open(can_pth_prefix+cidx+".json", 'r',encoding='utf8') as f:
                     data=json.load(f,object_pairs_hook=OrderedDict)
-                    can_txt_ls.append(data["qw"])
+                    # can_txt_ls.append(data["qw"])
+                    can_txt_ls.append(data["fact"])
 
             # tokenize all candidate texts
             mx=args.max_seq_length
@@ -98,13 +100,20 @@ def valid(tokenizer,model,device,test_query_pth,args):
                 qe=model(q_ten).pooler_output
 
             cosls=[]
-            for cant in can_ten:
-                cant=cant.to(device).unsqueeze(0)
+            from torch.utils.data import DataLoader, TensorDataset
+            can_set=TensorDataset(can_ten)
+            loader = DataLoader(can_set,
+                              batch_size=args.batch_size,
+                              shuffle=False,
+                                drop_last=False)
+            for cant in loader:
+                cant=cant[0].to(device) # cant is a tuple
                 with torch.no_grad():
-                    ce=model(cant).pooler_output
-                cosls.append(float(cof(qe,ce)[0]))
-                del cant
-                del ce
+                    ce=model(cant).pooler_output # bs,d
+                    res=cof(qe,ce).cpu().tolist()
+                    # print(res)
+                cosls.extend(res)
+                # break
             print(f"cosls: {cosls}")
 
             # # sorted it.
@@ -117,7 +126,7 @@ def valid(tokenizer,model,device,test_query_pth,args):
             # 取得每个元素的索引  
             indices = [str(idx) for _, idx in sorted_vals]
 
-            new_result[qidx]=indices
+            new_result[qidx]=[str(top_1000_ls[int(iii)]) for iii in indices]
         del q_ten
             
     with open("temp_test_ourlawformer1.json", 'w',encoding='utf8') as f:
@@ -125,11 +134,9 @@ def valid(tokenizer,model,device,test_query_pth,args):
         print("re-ranked idx save done.")
     
 
-
-
 def temp_use():
     # from collections import OrderedDict
-    with open("./temp_test_ourlawformer.json", 'r',encoding='utf8') as f:
+    with open("./temp_test_ourlawformer1.json", 'r',encoding='utf8') as f:
         data=json.load(f,object_pairs_hook=OrderedDict)
 
     newdict={}
@@ -137,10 +144,8 @@ def temp_use():
         value=[str(x) for x in data[key]]
         newdict[key]=value
 
-    with open("./temp_test_ourlawformer.json", 'w',encoding='utf8') as f:
+    with open("./temp_test_ourlawformer1.json", 'w',encoding='utf8') as f:
         json.dump(newdict,f,ensure_ascii=False,indent=4)
-        
-        
 
 if __name__=="__main__":
     temp_use()

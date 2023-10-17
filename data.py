@@ -125,7 +125,8 @@ class ExtractDataset(Dataset):
 
             # print(type(sample["id"]),sample["id"])
             if str(sample["id"]) in self.train_dict:
-                query=sample["query"]
+                # query=sample["query"]
+                query=sample["fact"]
                 # then obtain all candidates text.
                 can_txts=[]
                 cans=self.train_dict[str(sample["id"])]

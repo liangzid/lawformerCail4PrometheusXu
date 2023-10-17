@@ -24,6 +24,7 @@ import json
 import numpy as np
 
 from data import ExtractDataset
+from data2 import ExtractDataset2 as ED2
 
 import random
 import argparse
@@ -71,6 +72,10 @@ def setup_train_args():
                         type=str, required=True)
     parser.add_argument("--can_dir", 
                         type=str, required=True)
+    parser.add_argument("--dataset_type",default="overall",
+                        type=str, required=False)
+    parser.add_argument("--using_data2",default=0, 
+                        type=int, required=False)
 
     parser.add_argument("--train", default=1, type=int,
                         required=True, help="用以决定是训练模式还是测试模式")
@@ -163,100 +168,131 @@ def train(tokenizer, model, device, optimizer, train_loader,args):
     cof=torch.nn.CosineSimilarity(dim=1,eps=1e-6)
     for epoch in range(args.epochs):
         print(f"-------EPOCH {epoch}-------------")
-        for i,(q,c3,c2,c15,c1,c05,c0) in enumerate(train_loader):
+        if args.using_data2==1:
+            for i,(q1,c1,q2,c2) in enumerate(train_loader):
+                q1=q1.to(device)
+                q2=q2.to(device)
+                c1=c1.to(device)
+                c2=c2.to(device)
+                eq1=model(q1).pooler_output
+                eq2=model(q2).pooler_output
+                ec1=model(c1).pooler_output
+                ec2=model(c2).pooler_output
+                co1=cof(eq1,ec1)
+                co2=cof(eq2,ec2)
+                res=torch.exp(-1*args.lambdaa*(co1-co2))
+                res=torch.sum(res)/args.batch_size
+                los=torch.log(res+1)
+                if step%1==0:
+                    print(f"now the loss is: {los}")
 
-            q=q.to(device)
-            c3=c3.to(device)
-            c2=c2.to(device)
-            c15=c15.to(device)
-            c1=c1.to(device)
-            c05=c05.to(device)
-            c0=c0.to(device)
+                los.backward()
+                if step%args.gradient_accumulation==0:
+                    alllos+=los.item()
+                    optimizer.step()
+                    optimizer.zero_grad()
+                step+=1
+                if step>=args.max_step:
+                    break
 
-            # print(q.shape)
+            model.save_pretrained(args.save_model_path +f"e{epoch}")
+            tokenizer.save_pretrained(args.save_model_path+f"e{epoch}")
+            print(f"save ckpt.")
+        else:
+            for i,(q,c3,c2,c15,c1,c05,c0) in enumerate(train_loader):
 
-            ####
-            ## link cosine loss
-            ## cos(q,c3)>cos(q,c2), cos(q,c2)>cos(q,c15), cos(q,c15>q,c1)
-            ## cos(q,c1)>cos(q,c05) cos(q, c05)>cos(q,c0)
-            ###
-            eq=model(q).pooler_output # bs, d
-            ec3=model(c3).pooler_output
-            ec2=model(c2).pooler_output
-            ec15=model(c15).pooler_output
-            ec1=model(c1).pooler_output
-            ec05=model(c05).pooler_output
-            ec0=model(c0).pooler_output
-            
-            
-            ######
-            ###### calculate the cosent loss
-            ######
-            # reference: https://spaces.ac.cn/archives/8847
-            ## now calculate the variant cosent loss
+                q=q.to(device)
+                c3=c3.to(device)
+                c2=c2.to(device)
+                c15=c15.to(device)
+                c1=c1.to(device)
+                c05=c05.to(device)
+                c0=c0.to(device)
 
-            # 1. calculate cosine similarity
-            co3=cof(eq,ec3)
-            co2=cof(eq,ec2)
-            co15=cof(eq,ec15)
-            co1=cof(eq,ec1)
-            co05=cof(eq,ec05)
-            co0=cof(eq,ec0)
+                # print(q.shape)
 
-            ## 2. calculate the 差值 in these orders 
-            lambdaa=args.lambdaa
-            res=0.
-            ## 2.1 full
-            res+=torch.exp(-1*lambdaa*(co3-co2))
-            res+=torch.exp(-1*lambdaa*(co2-co15))
-            res+=torch.exp(-1*lambdaa*(co15-co1))
-            res+=torch.exp(-1*lambdaa*(co1-co05))
-            res+=torch.exp(-1*lambdaa*(co05-co0))
-            res+=torch.exp(-1*lambdaa*(co3-co0))
-            res+=torch.exp(-1*lambdaa*(co2-co0))
-            res+=torch.exp(-1*lambdaa*(co3-co1))
+                ####
+                ## link cosine loss
+                ## cos(q,c3)>cos(q,c2), cos(q,c2)>cos(q,c15), cos(q,c15>q,c1)
+                ## cos(q,c1)>cos(q,c05) cos(q, c05)>cos(q,c0)
+                ###
+                eq=model(q).pooler_output # bs, d
+                ec3=model(c3).pooler_output
+                ec2=model(c2).pooler_output
+                ec15=model(c15).pooler_output
+                ec1=model(c1).pooler_output
+                ec05=model(c05).pooler_output
+                ec0=model(c0).pooler_output
 
-            # ## 2.2
-            # del co15
-            # del co05
-            # del ec15
-            # del ec05
-            # res+=torch.exp(-1*lambdaa*(co3-co2))
-            # res+=torch.exp(-1*lambdaa*(co2-co1))
-            # res+=torch.exp(-1*lambdaa*(co1-co0))
 
-            # ## 2.3
-            # del co15
-            # del co05
-            # del co2
-            # del co1
-            # del ec15
-            # del ec05
-            # del ec2
-            # del ec1
-            # res+=torch.exp(-1*lambdaa*(co3-co0))
+                ######
+                ###### calculate the cosent loss
+                ######
+                # reference: https://spaces.ac.cn/archives/8847
+                ## now calculate the variant cosent loss
 
-            res=torch.sum(res)/args.batch_size
+                # 1. calculate cosine similarity
+                co3=cof(eq,ec3)
+                co2=cof(eq,ec2)
+                co15=cof(eq,ec15)
+                co1=cof(eq,ec1)
+                co05=cof(eq,ec05)
+                co0=cof(eq,ec0)
 
-            # now the shape of res should be (bs,1)
+                ## 2. calculate the 差值 in these orders 
+                lambdaa=args.lambdaa
+                res=0.
+                ## 2.1 full
+                res+=torch.exp(-1*lambdaa*(co3-co2))
+                res+=torch.exp(-1*lambdaa*(co2-co15))
+                res+=torch.exp(-1*lambdaa*(co15-co1))
+                res+=torch.exp(-1*lambdaa*(co1-co05))
+                res+=torch.exp(-1*lambdaa*(co05-co0))
+                res+=torch.exp(-1*lambdaa*(co3-co0))
+                res+=torch.exp(-1*lambdaa*(co2-co0))
+                res+=torch.exp(-1*lambdaa*(co3-co1))
 
-            los=torch.log(res+1)
-            
-            if step%1==0:
-                print(f"now the loss is: {los}")
+                # ## 2.2
+                # del co15
+                # del co05
+                # del ec15
+                # del ec05
+                # res+=torch.exp(-1*lambdaa*(co3-co2))
+                # res+=torch.exp(-1*lambdaa*(co2-co1))
+                # res+=torch.exp(-1*lambdaa*(co1-co0))
 
-            los.backward()
-            if step%args.gradient_accumulation==0:
-                alllos+=los.item()
-                optimizer.step()
-                optimizer.zero_grad()
-            step+=1
-            if step>=args.max_step:
-                break
+                # ## 2.3
+                # del co15
+                # del co05
+                # del co2
+                # del co1
+                # del ec15
+                # del ec05
+                # del ec2
+                # del ec1
+                # res+=torch.exp(-1*lambdaa*(co3-co0))
 
-        model.save_pretrained(args.save_model_path +f"e{epoch}")
-        tokenizer.save_pretrained(args.save_model_path+f"e{epoch}")
-        print(f"save ckpt.")
+                res=torch.sum(res)/args.batch_size
+
+                # now the shape of res should be (bs,1)
+
+                los=torch.log(res+1)
+
+                if step%1==0:
+                    print(f"now the loss is: {los}")
+
+                los.backward()
+                if step%args.gradient_accumulation==0:
+                    alllos+=los.item()
+                    optimizer.step()
+                    optimizer.zero_grad()
+                step+=1
+                if step>=args.max_step:
+                    break
+
+            model.save_pretrained(args.save_model_path +f"e{epoch}")
+            tokenizer.save_pretrained(args.save_model_path+f"e{epoch}")
+            print(f"save ckpt.")
     model.save_pretrained(args.save_model_path +f"finally")
     tokenizer.save_pretrained(args.save_model_path+f"finally")
 
@@ -282,13 +318,23 @@ def main(args):
     if args.seed:
         _set_random_seed(args.seed)
 
-    train_set=ExtractDataset(args,tokenizer,
-                             tp="vanilla",
-                             mode="train",
-                             lblpth=args.lblpth,
-                             q_pth=args.qpth,
-                             can_dir=args.can_dir,
-                             )
+    if args.using_data2==0:
+        train_set=ExtractDataset(args,tokenizer,
+                                tp="vanilla",
+                                mode="train",
+                                lblpth=args.lblpth,
+                                q_pth=args.qpth,
+                                can_dir=args.can_dir,
+                                )
+    else:
+        train_set=ED2(args,tokenizer,
+                                tp=args.dataset_type,
+                                mode="train",
+                                lblpth=args.lblpth,
+                                q_pth=args.qpth,
+                                can_dir=args.can_dir,
+                                )
+        
 
     train_loader = DataLoader(train_set,
                               batch_size=args.batch_size,

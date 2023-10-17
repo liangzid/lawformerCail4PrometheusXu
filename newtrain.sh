@@ -1,16 +1,12 @@
 #!/bin/bash
 ######################################################################
-#RUN_TRAIN ---
+#NEWTRAIN --- 
 
-# run train file to begin a training exam.
+# new train with new dataset formats.
 
 # Author: Zi Liang <liangzid@stu.xjtu.edu.cn>
 # Copyright © 2023, ZiLiang, all rights reserved.
-# Created: 12 October 2023
-######################################################################
-
-######################### Commentary ##################################
-##  
+# Created: 17 十月 2023
 ######################################################################
 
 export env_name="Bert-keras"
@@ -18,15 +14,18 @@ export python=/home/nxu/anaconda3/envs/${env_name}/bin/python3
 export root_dir="${HOME}/LEVENs/CAIL_2023/"
 
 ##-----------------------------------------------------------------------------------------
-export device="7"
+export device="5"
 export epochs=5
-export batch_size=1
+export batch_size=4
 export lr=3e-5
-export max_seq_length=768
+export max_seq_length=512
 export pretrained_model_path="${root_dir}/ziliang_test/query_sementics/Lawformer" # todo 
 export save_log_path="${root_dir}/log/boring-log.log"
-export save_model_path="${pretrained_model_path}/saved_models/manyallretrain_${epochs}${lr}${max_seq_length}"
-export max_step=20000
+export max_step=50000
+export using_data2=1
+export dataset_type="overall"
+export dataset_type="onlyLinkAll"
+export save_model_path="${pretrained_model_path}/saved_models/data2train_${epochs}${lr}${max_seq_length}${using_data2}${dataset_type}"
 
 # dataset related
 export lblpth="/home/nxu/LEVENs/CAIL_2023/label4train/stage1_train_label.json"
@@ -48,26 +47,29 @@ ${python} train.py \
 	--lambdaa=20\
 	--lblpth=${lblpth}\
 	--qpth=${q_pth}\
+	--can_dir=${can_dir}\
+	--using_data2=${using_data2}\
+	--dataset_type=${dataset_type}
+
+
+export save_model_path="${save_model_path}finally"
+echo "---> BEGIN to TEST"
+${python} train.py \
+	--train=0 \
+	--max_seq_length=${max_seq_length} \
+	--device=${device} \
+	--cuda_num=${device} \
+	--epochs=${epochs} \
+	--batch_size=${batch_size} \
+	--lr=${lr} \
+	--pretrained_model_path=${pretrained_model_path} \
+	--save_model_path="${save_model_path}" \
+	--max_step=${max_step} \
+	--lambdaa=20\
+	--lblpth=${lblpth}\
+	--qpth=${q_pth}\
 	--can_dir=${can_dir}
 
 
-# export save_model_path="${pretrained_model_path}/saved_models/manyallretrain_${epochs}${lr}${max_seq_length}finally"
-# echo "---> BEGIN to TEST"
-# ${python} train.py \
-# 	--train=0 \
-# 	--max_seq_length=${max_seq_length} \
-# 	--device=${device} \
-# 	--cuda_num=${device} \
-# 	--epochs=${epochs} \
-# 	--batch_size=${batch_size} \
-# 	--lr=${lr} \
-# 	--pretrained_model_path=${pretrained_model_path} \
-# 	--save_model_path="${save_model_path}" \
-# 	--max_step=${max_step} \
-# 	--lambdaa=20\
-# 	--lblpth=${lblpth}\
-# 	--qpth=${q_pth}\
-# 	--can_dir=${can_dir}
-
-echo "RUNNING run_train.sh DONE."
-# run_train.sh ends here
+echo "RUNNING newtrain.sh DONE."
+# newtrain.sh ends here
