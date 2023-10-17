@@ -135,7 +135,7 @@ class ExtractDataset(Dataset):
                     with open(prefix_can_pth+f"{c}.json",
                               'r',encoding='utf8') as f:
                         cd=json.load(f,object_pairs_hook=OrderedDict)
-                    can_txts.append(cd["qw"])
+                    can_txts.append(cd["fact"])
                 self.text_dict[query]=can_txts
                 self.qls.append(query)
                 self.c3s.append(can_txts[0])

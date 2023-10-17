@@ -18,14 +18,14 @@ export python=/home/nxu/anaconda3/envs/${env_name}/bin/python3
 export root_dir="${HOME}/LEVENs/CAIL_2023/"
 
 ##-----------------------------------------------------------------------------------------
-export device="7"
+export device="6"
 export epochs=5
-export batch_size=4
+export batch_size=1
 export lr=3e-5
-export max_seq_length=256
+export max_seq_length=768
 export pretrained_model_path="${root_dir}/ziliang_test/query_sementics/Lawformer" # todo 
 export save_log_path="${root_dir}/log/boring-log.log"
-export save_model_path="${pretrained_model_path}/saved_models/${epochs}${lr}${max_seq_length}"
+export save_model_path="${pretrained_model_path}/saved_models/manyallretrain_${epochs}${lr}${max_seq_length}"
 export max_step=20000
 
 # dataset related
@@ -51,7 +51,7 @@ export can_dir="/home/nxu/LEVENs/CAIL_2023/processed_data/stage_1/candidate/"
 # 	--can_dir=${can_dir}
 
 
-export save_model_path="${pretrained_model_path}/saved_models/${epochs}${lr}e4/"
+export save_model_path="${pretrained_model_path}/saved_models/manyallretrain_${epochs}${lr}${max_seq_length}finally"
 echo "---> BEGIN to TEST"
 ${python} train.py \
 	--train=0 \

@@ -160,6 +160,7 @@ def train(tokenizer, model, device, optimizer, train_loader,args):
     model.train()
     step=0.
     alllos=0.
+    cof=torch.nn.CosineSimilarity(dim=1,eps=1e-6)
     for epoch in range(args.epochs):
         print(f"-------EPOCH {epoch}-------------")
         for i,(q,c3,c2,c15,c1,c05,c0) in enumerate(train_loader):
@@ -195,7 +196,6 @@ def train(tokenizer, model, device, optimizer, train_loader,args):
             ## now calculate the variant cosent loss
 
             # 1. calculate cosine similarity
-            cof=torch.nn.CosineSimilarity(dim=1,eps=1e-6)
             co3=cof(eq,ec3)
             co2=cof(eq,ec2)
             co15=cof(eq,ec15)
@@ -212,11 +212,29 @@ def train(tokenizer, model, device, optimizer, train_loader,args):
             res+=torch.exp(-1*lambdaa*(co15-co1))
             res+=torch.exp(-1*lambdaa*(co1-co05))
             res+=torch.exp(-1*lambdaa*(co05-co0))
+            res+=torch.exp(-1*lambdaa*(co3-co0))
+            res+=torch.exp(-1*lambdaa*(co2-co0))
+            res+=torch.exp(-1*lambdaa*(co3-co1))
 
             # ## 2.2
+            # del co15
+            # del co05
+            # del ec15
+            # del ec05
             # res+=torch.exp(-1*lambdaa*(co3-co2))
             # res+=torch.exp(-1*lambdaa*(co2-co1))
             # res+=torch.exp(-1*lambdaa*(co1-co0))
+
+            # ## 2.3
+            # del co15
+            # del co05
+            # del co2
+            # del co1
+            # del ec15
+            # del ec05
+            # del ec2
+            # del ec1
+            # res+=torch.exp(-1*lambdaa*(co3-co0))
 
             res=torch.sum(res)/args.batch_size
 
@@ -239,6 +257,8 @@ def train(tokenizer, model, device, optimizer, train_loader,args):
         model.save_pretrained(args.save_model_path +f"e{epoch}")
         tokenizer.save_pretrained(args.save_model_path+f"e{epoch}")
         print(f"save ckpt.")
+    model.save_pretrained(args.save_model_path +f"finally")
+    tokenizer.save_pretrained(args.save_model_path+f"finally")
 
 
 def main(args):

@@ -49,6 +49,7 @@ from torch.utils.data import Dataset, DataLoader
 from torch.nn import CrossEntropyLoss
 import torch.nn as nn
 from collections import OrderedDict
+from tqdm import tqdm
 
 def valid(tokenizer,model,device,test_query_pth,args):
     model.eval()
@@ -66,7 +67,7 @@ def valid(tokenizer,model,device,test_query_pth,args):
     # load all query.
     with open(test_query_pth, 'r',encoding='utf8') as f:
         data=f.readlines()
-        for x in data:
+        for x in tqdm(data):
             if "\n" in x:
                 x=x.split("\n")[0]
             adict=json.loads(x,object_pairs_hook=OrderedDict)
@@ -101,20 +102,45 @@ def valid(tokenizer,model,device,test_query_pth,args):
                 cant=cant.to(device).unsqueeze(0)
                 with torch.no_grad():
                     ce=model(cant).pooler_output
-                cosls.append(cof(qe,ce)[0])
+                cosls.append(float(cof(qe,ce)[0]))
                 del cant
                 del ce
             print(f"cosls: {cosls}")
 
-            # sorted it.
-            sorted_cosls = sorted(cosls, reverse=True) 
-            indexes = [cosls.index(i) for i in sorted_cosls]
+            # # sorted it.
+            # sorted_cosls = sorted(cosls, reverse=True) 
 
-            ranked_can_idx=[top_1000_ls[jjj] for jjj in indexes]
-            new_result[qidx]=ranked_can_idx
+            # 先转换为(数值,索引)元组
+            vals_with_idx = [(val, idx) for idx, val in enumerate(cosls)]
+            # 根据数值排序,如果数值相同则索引小的排在前面
+            sorted_vals = sorted(vals_with_idx, key=lambda x: (-x[0], x[1]))  
+            # 取得每个元素的索引  
+            indices = [str(idx) for _, idx in sorted_vals]
+
+            new_result[qidx]=indices
         del q_ten
             
-    with open("temp_test_ourlawformer.json", 'w',encoding='utf8') as f:
+    with open("temp_test_ourlawformer1.json", 'w',encoding='utf8') as f:
         json.dump(new_result,f,ensure_ascii=False,indent=4)
         print("re-ranked idx save done.")
     
+
+
+
+def temp_use():
+    # from collections import OrderedDict
+    with open("./temp_test_ourlawformer.json", 'r',encoding='utf8') as f:
+        data=json.load(f,object_pairs_hook=OrderedDict)
+
+    newdict={}
+    for key in data.keys():
+        value=[str(x) for x in data[key]]
+        newdict[key]=value
+
+    with open("./temp_test_ourlawformer.json", 'w',encoding='utf8') as f:
+        json.dump(newdict,f,ensure_ascii=False,indent=4)
+        
+        
+
+if __name__=="__main__":
+    temp_use()
