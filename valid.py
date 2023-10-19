@@ -129,7 +129,7 @@ def valid(tokenizer,model,device,test_query_pth,args):
             new_result[qidx]=[str(top_1000_ls[int(iii)]) for iii in indices]
         del q_ten
             
-    with open("temp_test_ourlawformer1.json", 'w',encoding='utf8') as f:
+    with open(f"{args.save_model_path}infer-res.json", 'w',encoding='utf8') as f:
         json.dump(new_result,f,ensure_ascii=False,indent=4)
         print("re-ranked idx save done.")
     

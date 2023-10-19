@@ -165,6 +165,7 @@ def train(tokenizer, model, device, optimizer, train_loader,args):
     model.train()
     step=0.
     alllos=0.
+    res=0.
     cof=torch.nn.CosineSimilarity(dim=1,eps=1e-6)
     for epoch in range(args.epochs):
         print(f"-------EPOCH {epoch}-------------")
@@ -180,13 +181,18 @@ def train(tokenizer, model, device, optimizer, train_loader,args):
                 ec2=model(c2).pooler_output
                 co1=cof(eq1,ec1)
                 co2=cof(eq2,ec2)
-                res=torch.exp(-1*args.lambdaa*(co1-co2))
-                res=torch.sum(res)/args.batch_size
-                los=torch.log(res+1)
+                temp=torch.exp(-1*args.lambdaa*(co1-co2))
+                res+=torch.sum(temp)
+                # del q1
+                # del q2
+                # del c1
+                # del c2
                 if step%1==0:
+                    los=torch.log(res+1)
                     print(f"now the loss is: {los}")
+                    los.backward()
+                    res=0.
 
-                los.backward()
                 if step%args.gradient_accumulation==0:
                     alllos+=los.item()
                     optimizer.step()
@@ -272,7 +278,7 @@ def train(tokenizer, model, device, optimizer, train_loader,args):
                 # del ec1
                 # res+=torch.exp(-1*lambdaa*(co3-co0))
 
-                res=torch.sum(res)/args.batch_size
+                res=torch.sum(res)
 
                 # now the shape of res should be (bs,1)
 
