@@ -125,8 +125,8 @@ class ExtractDataset(Dataset):
 
             # print(type(sample["id"]),sample["id"])
             if str(sample["id"]) in self.train_dict:
-                # query=sample["query"]
-                query=sample["fact"]
+                query=sample["query"]
+                # query=sample["fact"]
                 # then obtain all candidates text.
                 can_txts=[]
                 cans=self.train_dict[str(sample["id"])]
@@ -136,7 +136,8 @@ class ExtractDataset(Dataset):
                     with open(prefix_can_pth+f"{c}.json",
                               'r',encoding='utf8') as f:
                         cd=json.load(f,object_pairs_hook=OrderedDict)
-                    can_txts.append(cd["fact"])
+                    # can_txts.append(cd["fact"])
+                    can_txts.append(cd["qw"])
                 self.text_dict[query]=can_txts
                 self.qls.append(query)
                 self.c3s.append(can_txts[0])

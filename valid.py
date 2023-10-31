@@ -72,19 +72,20 @@ def valid(tokenizer,model,device,test_query_pth,args):
                 x=x.split("\n")[0]
             adict=json.loads(x,object_pairs_hook=OrderedDict)
             qidx=str(adict["id"])
-            top_1000_ls=q_c_dict[qidx]
+            # top_1000_ls=q_c_dict[qidx]
+            top_1000_ls=q_c_dict[qidx][:50]
             print(f"len of top1k ls: {len(top_1000_ls)}")
 
             # query:
-            # qtxt=adict["query"]
-            qtxt=adict["fact"]
+            qtxt=adict["query"]
+            # qtxt=adict["fact"]
             can_txt_ls=[]
             can_pth_prefix="/home/nxu/LEVENs/CAIL_2023/processed_data/stage_1/candidate/"
             for cidx in top_1000_ls:
                 with open(can_pth_prefix+cidx+".json", 'r',encoding='utf8') as f:
                     data=json.load(f,object_pairs_hook=OrderedDict)
-                    # can_txt_ls.append(data["qw"])
-                    can_txt_ls.append(data["fact"])
+                    can_txt_ls.append(data["qw"])
+                    # can_txt_ls.append(data["fact"])
 
             # tokenize all candidate texts
             mx=args.max_seq_length

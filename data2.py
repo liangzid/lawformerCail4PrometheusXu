@@ -134,7 +134,8 @@ class ExtractDataset2(Dataset):
         for i,sample in enumerate(data):
             # if i>2000:
                 # break
-            self.q_dict[str(sample["id"])]=sample["fact"]
+            # self.q_dict[str(sample["id"])]=sample["fact"]
+            self.q_dict[str(sample["id"])]=sample["query"]
 
         ## parse candidate dirs
         flnes=os.listdir(can_dir)
@@ -145,7 +146,8 @@ class ExtractDataset2(Dataset):
             with open(can_dir+fname,
                         'r',encoding='utf8') as f:
                 cd=json.load(f,object_pairs_hook=OrderedDict)
-            self.can_dict[cname]=(cd["fact"])
+            # self.can_dict[cname]=(cd["fact"])
+            self.can_dict[cname]=(cd["qw"])
 
         ## translate index list into text list.
         self.q3=[(self.q_dict[str(q)],self.can_dict[str(c)]) for q,c in self.q3]
@@ -337,7 +339,7 @@ class ExtractDataset2(Dataset):
         del self.q05
 
         ## shuffle list and and then sample some of them
-        dataset_num=10000
+        dataset_num=30000
         random.shuffle(self.four_ls)
         self.four_ls=self.four_ls[:dataset_num]
 
