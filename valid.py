@@ -73,6 +73,7 @@ def valid(tokenizer,model,device,test_query_pth,args):
             adict=json.loads(x,object_pairs_hook=OrderedDict)
             qidx=str(adict["id"])
             # top_1000_ls=q_c_dict[qidx]
+            # top_1000_ls=q_c_dict[qidx][:100]
             top_1000_ls=q_c_dict[qidx][:50]
             print(f"len of top1k ls: {len(top_1000_ls)}")
 

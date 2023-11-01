@@ -24,8 +24,10 @@ export pretrained_model_path="${root_dir}/ziliang_test/query_sementics/Lawformer
 export save_log_path="${root_dir}/log/boring-log.log"
 export max_step=50000
 export using_data2=1
-export dataset_type="overall"
+# export dataset_type="overall"
 # export dataset_type="onlyLinkAll"
+export dataset_type="only_3-2-1-0_all"
+# export dataset_type="cosal_3-2-1-0_all"
 export save_model_path="${pretrained_model_path}/saved_models/data2train_${epochs}${lr}${max_seq_length}${using_data2}${dataset_type}"
 
 # dataset related

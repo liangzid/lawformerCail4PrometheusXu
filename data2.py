@@ -270,6 +270,41 @@ class ExtractDataset2(Dataset):
                     if random.random()>alpha:
                         continue
                     self.four_ls.append((a[0],a[1],b[0],b[1]))
+        elif tp=="cosal_3-2-1-0_all":
+            self.q1.extend(self.q15)
+            self.q0.extend(self.q05)
+            for a in self.q3:
+                for b in self.q2:
+                    if random.random()>alpha:
+                        continue
+                    self.four_ls.append((a[0],a[1],b[0],b[1]))
+            for a in self.q3:
+                for b in self.q1:
+                    if random.random()>alpha:
+                        continue
+                    self.four_ls.append((a[0],a[1],b[0],b[1]))
+            print("q3 done.")
+            for a in self.q3:
+                for b in self.q0:
+                    if random.random()>alpha:
+                        continue
+                    self.four_ls.append((a[0],a[1],b[0],b[1]))
+            for a in self.q2:
+                for b in self.q1:
+                    if random.random()>alpha:
+                        continue
+                    self.four_ls.append((a[0],a[1],b[0],b[1]))
+            for a in self.q2:
+                for b in self.q0:
+                    if random.random()>alpha:
+                        continue
+                    self.four_ls.append((a[0],a[1],b[0],b[1]))
+            for a in self.q1:
+                for b in self.q0:
+                    if random.random()>alpha:
+                        continue
+                    self.four_ls.append((a[0],a[1],b[0],b[1]))
+
         elif tp=="only_3-2-1-0_all":
             for a in self.q3:
                 for b in self.q2:

@@ -1,0 +1,33 @@
+#+title: PLANNING
+#+date: Tue Oct 31 16:07:20 2023
+#+author: Zi Liang
+#+email: liangzid@stu.xjtu.edu.cn
+#+latex_class: elegantpaper
+#+filetags: ::
+
+
+* Introduction
+
+** Two types of training code
+
+*** 1: old train in =run_train.sh=
+
+per item: (query, candidate 3, 2,1,0)
+
+*** 2: new train: =newtrain.sh=
+
+per item: (q1,c1, q2,c2) to ensure sim(q1,c1)>(q2,c2)
+
+
+
+** evaluation
+
++ =valid.py= : for validation. used in train.py
+
++ =/home/nxu/LEVENs/CAIL_2023/qwt_test/test/recall_zlliang.py= : my file to compute the metrics.
+
+
+* TODOs
+
+** 
+
