@@ -374,6 +374,7 @@ class ExtractDataset2(Dataset):
         del self.q05
 
         ## shuffle list and and then sample some of them
+        # dataset_num=600
         dataset_num=30000
         random.shuffle(self.four_ls)
         self.four_ls=self.four_ls[:dataset_num]
