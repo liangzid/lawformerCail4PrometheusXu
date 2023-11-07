@@ -14,8 +14,8 @@ export python=/home/nxu/anaconda3/envs/${env_name}/bin/python3
 export root_dir="${HOME}/LEVENs/CAIL_2023/"
 
 ##-----------------------------------------------------------------------------------------
-export device="2"
-export epochs=2
+export device="4"
+export epochs=5
 export batch_size=4
 export lr=3e-5
 # export max_seq_length=512
@@ -29,6 +29,7 @@ export dataset_type="overall"
 # export dataset_type="onlyLinkAll"
 # export dataset_type="only_3-2-1-0_all"
 # export dataset_type="cosal_3-2-1-0_all"
+# export save_model_path="${pretrained_model_path}/saved_models/data2train_${epochs}${lr}${max_seq_length}${using_data2}${dataset_type}${lambdaa}"
 export save_model_path="${pretrained_model_path}/saved_models/data2train_${epochs}${lr}${max_seq_length}${using_data2}${dataset_type}${lambdaa}"
 
 # dataset related
@@ -56,6 +57,7 @@ ${python} train.py \
 	--dataset_type=${dataset_type}
 
 export save_model_path="${save_model_path}finally"
+# export save_model_path="${save_model_path}e0"
 echo "---> BEGIN to TEST"
 ${python} train.py \
 	--train=0 \

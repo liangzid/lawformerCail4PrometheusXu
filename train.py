@@ -320,6 +320,7 @@ def main(args):
     tokenizer = AutoTokenizer.from_pretrained(args.pretrained_model_path)
     optimizer = torch.optim.AdamW(model.parameters(), lr=args.lr)
     model = model.to(device)
+    model.train()
 
     if args.seed:
         _set_random_seed(args.seed)

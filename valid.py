@@ -52,7 +52,7 @@ from collections import OrderedDict
 from tqdm import tqdm
 
 def valid(tokenizer,model,device,test_query_pth,args):
-    model.eval()
+    # model.eval()
 
     # load top-1000 candidates
     all_candidates_for_query="/home/nxu/LEVENs/CAIL_2023/qwt_test/prediction/combined_prediction_jieba_fact.json"
@@ -73,8 +73,8 @@ def valid(tokenizer,model,device,test_query_pth,args):
             adict=json.loads(x,object_pairs_hook=OrderedDict)
             qidx=str(adict["id"])
             # top_1000_ls=q_c_dict[qidx]
-            # top_1000_ls=q_c_dict[qidx][:100]
-            top_1000_ls=q_c_dict[qidx][:50]
+            top_1000_ls=q_c_dict[qidx][:100]
+            # top_1000_ls=q_c_dict[qidx][:50]
             print(f"len of top1k ls: {len(top_1000_ls)}")
 
             # query:

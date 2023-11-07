@@ -165,85 +165,148 @@ class ExtractDataset2(Dataset):
             json.dump([self.q3,self.q2,self.q15,self.q1,self.q05,self.q0]
                       ,f,ensure_ascii=False,indent=4)
 
-        alpha=1.
+        alpha=0.5
+        # dataset_num=600
+        dataset_num=30000
+
+        random.shuffle(self.q3)
+        random.shuffle(self.q2)
+        random.shuffle(self.q1)
+        random.shuffle(self.q15)
+        random.shuffle(self.q05)
+        random.shuffle(self.q0)
 
         self.four_ls=[]
         if tp=="overall":
+            num_here=0.
             for a in self.q3:
                 for b in self.q2:
-                    if random.random()>alpha:
+                    if random.random()>alpha or num_here>dataset_num/14*10:
                         continue
                     self.four_ls.append((a[0],a[1],b[0],b[1]))
+                    num_here+=1
+            num_here=0.
+            random.shuffle(self.q3)
             for a in self.q3:
                 for b in self.q15:
                     if random.random()>alpha:
                         continue
                     self.four_ls.append((a[0],a[1],b[0],b[1]))
+                    num_here+=1
+            num_here=0.
+            random.shuffle(self.q3)
             for a in self.q3:
                 for b in self.q1:
                     if random.random()>alpha:
                         continue
                     self.four_ls.append((a[0],a[1],b[0],b[1]))
+                    num_here+=1
+            num_here=0.
+            random.shuffle(self.q3)
             for a in self.q3:
                 for b in self.q05:
                     if random.random()>alpha:
                         continue
                     self.four_ls.append((a[0],a[1],b[0],b[1]))
+                    num_here+=1
+            num_here=0.
+            random.shuffle(self.q3)
             for a in self.q3:
                 for b in self.q0:
                     if random.random()>alpha:
                         continue
                     self.four_ls.append((a[0],a[1],b[0],b[1]))
+                    num_here+=1
+            num_here=0.
+            random.shuffle(self.q2)
+            random.shuffle(self.q15)
+            random.shuffle(self.q1)
+            random.shuffle(self.q05)
+            random.shuffle(self.q0)
             for a in self.q2:
                 for b in self.q15:
                     if random.random()>alpha:
                         continue
                     self.four_ls.append((a[0],a[1],b[0],b[1]))
+                    num_here+=1
+            num_here=0.
+            random.shuffle(self.q2)
             for a in self.q2:
                 for b in self.q1:
                     if random.random()>alpha:
                         continue
                     self.four_ls.append((a[0],a[1],b[0],b[1]))
+                    num_here+=1
+            num_here=0.
+            random.shuffle(self.q2)
             for a in self.q2:
                 for b in self.q05:
                     if random.random()>alpha:
                         continue
                     self.four_ls.append((a[0],a[1],b[0],b[1]))
+                    num_here+=1
+            num_here=0.
+            random.shuffle(self.q2)
             for a in self.q2:
                 for b in self.q0:
                     if random.random()>alpha:
                         continue
                     self.four_ls.append((a[0],a[1],b[0],b[1]))
+                    num_here+=1
+            num_here=0.
+            random.shuffle(self.q15)
+            random.shuffle(self.q1)
+            random.shuffle(self.q05)
+            random.shuffle(self.q0)
             for a in self.q15:
                 for b in self.q1:
                     if random.random()>alpha:
                         continue
                     self.four_ls.append((a[0],a[1],b[0],b[1]))
+                    num_here+=1
+            num_here=0.
+            random.shuffle(self.q15)
             for a in self.q15:
                 for b in self.q05:
                     if random.random()>alpha:
                         continue
                     self.four_ls.append((a[0],a[1],b[0],b[1]))
+                    num_here+=1
+            num_here=0.
+            random.shuffle(self.q15)
             for a in self.q15:
                 for b in self.q0:
                     if random.random()>alpha:
                         continue
                     self.four_ls.append((a[0],a[1],b[0],b[1]))
+                    num_here+=1
+            num_here=0.
+            random.shuffle(self.q1)
+            random.shuffle(self.q05)
+            random.shuffle(self.q0)
             for a in self.q1:
                 for b in self.q05:
                     if random.random()>alpha:
                         continue
                     self.four_ls.append((a[0],a[1],b[0],b[1]))
+                    num_here+=1
+            num_here=0.
+            random.shuffle(self.q1)
             for a in self.q1:
                 for b in self.q0:
                     if random.random()>alpha:
                         continue
                     self.four_ls.append((a[0],a[1],b[0],b[1]))
+                    num_here+=1
+            num_here=0.
+            random.shuffle(self.q05)
+            random.shuffle(self.q0)
             for a in self.q05:
                 for b in self.q0:
                     if random.random()>alpha:
                         continue
                     self.four_ls.append((a[0],a[1],b[0],b[1]))
+                    num_here+=1
         elif tp=="onlyLinkAll":
             for a in self.q3:
                 for b in self.q2:
@@ -374,8 +437,6 @@ class ExtractDataset2(Dataset):
         del self.q05
 
         ## shuffle list and and then sample some of them
-        # dataset_num=600
-        dataset_num=30000
         random.shuffle(self.four_ls)
         self.four_ls=self.four_ls[:dataset_num]
 
